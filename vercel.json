@@ -10,6 +10,12 @@
             "dest": "/api/index.php"
         }
     ],
+    "builds": [
+        {
+          "src": "api/index.php",
+          "use": "@vercel/php"
+        }
+      ],
     "env": {
         "APP_ENV": "production",
         "APP_DEBUG": "true",

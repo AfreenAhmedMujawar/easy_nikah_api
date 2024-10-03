@@ -45,13 +45,14 @@ class LoginController extends Controller
             'message' => 'Login successful',
             // 'user' => $user,
             'token' => $token,
+            "success"=>true
         ], 200);
 
     } catch (ValidationException $e) {
         return response()->json(['message' => $e->errors()], 400);
     } catch (\Exception $e) {
       
-        return response()->json(['message' => 'Something went wrong: ' . $e->getMessage()], 500);
+        return response()->json(['message' => 'Something went wrong: '  ,"success"=>false. $e->getMessage()], 500);
     }
 }
 }

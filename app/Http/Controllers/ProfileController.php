@@ -8,86 +8,57 @@ use Illuminate\Http\Request;
 use CodeIgniter\RESTful\ResourceController;
 class ProfileController extends Controller
 {
-    // Get single user profile by ID
+    //Get single user profile by ID
+    public function getProfile($id)
+    {
+        // Fetch user profile by ID
+        // $user = User::find($id);
+        $user = User::all();
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // Return the profile details
+        return response()->json([
+            'profile_id' => $user->profile_id,
+            'full_name' => $user->full_name,
+            'marital_status' => ucfirst($user->user_marital_status), // Check the correct field name here
+            'age' => $user->age,
+            'height' => $user->user_height,
+            'qualification' => $user->user_qualification ?? '-', // Ensure the field is correct
+            'location' => ($user->user_location_city ?? '-') . ' ' . ($user->user_location_state ?? '-') . ' ' . ($user->user_location_country ?? '-'),
+        ]);
+    }
+
     // public function getProfile($id)
     // {
     //     // Fetch user profile by ID
     //     $user = User::find($id);
-
+    
     //     if (!$user) {
     //         return response()->json(['error' => 'User not found'], 404);
     //     }
-
-    //     // Return the profile details
+    
+    //     // Fetch all users with the same profile_id in ascending order
+    //     $relatedUsers = User::where('profile_id', $user->profile_id)
+    //         ->orderBy('id', 'asc') // Adjust the column name if necessary
+    //         ->get();
+    
+    //     // Return the profile details along with related users
     //     return response()->json([
     //         'profile_id' => $user->profile_id,
     //         'full_name' => $user->full_name,
-    //         'marital_status' => ucfirst($user->user_marital_status), // Check the correct field name here
+    //         'marital_status' => ucfirst($user->user_marital_status),
     //         'age' => $user->age,
     //         'height' => $user->user_height,
-    //         'qualification' => $user->user_qualification ?? '-', // Ensure the field is correct
+    //         'qualification' => $user->user_qualification ?? '-',
     //         'location' => ($user->user_location_city ?? '-') . ' ' . ($user->user_location_state ?? '-') . ' ' . ($user->user_location_country ?? '-'),
+    //         'related_users' => $relatedUsers, // Include the related users
     //     ]);
     // }
-
-    public function getProfile($id)
-    {
-        // Fetch user profile by ID
-        $user = User::find($id);
-    
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-    
-        // Fetch all users with the same profile_id in ascending order
-        $relatedUsers = User::where('profile_id', $user->profile_id)
-            ->orderBy('id', 'asc') // Adjust the column name if necessary
-            ->get();
-    
-        // Return the profile details along with related users
-        return response()->json([
-            'profile_id' => $user->profile_id,
-            'full_name' => $user->full_name,
-            'marital_status' => ucfirst($user->user_marital_status),
-            'age' => $user->age,
-            'height' => $user->user_height,
-            'qualification' => $user->user_qualification ?? '-',
-            'location' => ($user->user_location_city ?? '-') . ' ' . ($user->user_location_state ?? '-') . ' ' . ($user->user_location_country ?? '-'),
-            'related_users' => $relatedUsers, // Include the related users
-        ]);
-    }
     
 
-
-    public function getNewRegistrations()
-    {
-        $fromUserId = $this->session->get('userid');
-
-        // Check if the user is logged in
-        if (!$fromUserId) {
-            return $this->respond(['error' => 'User not authenticated'], 401);
-        }
-
-        // Retrieve the users based on your existing logic
-        $users = $this->getNewUsers($fromUserId);
-
-        if (empty($users)) {
-            return $this->respond(['message' => 'No profiles found.'], 404);
-        }
-
-        return $this->respond($users);
-    }
-
-    private function getNewUsers($fromUserId)
-    {
-        // This function should include your logic to get the new users
-        // For example, using a model to fetch the data.
-        
-        $this->load->model('User_model');
-        $result = $this->User->get_new_registrations($fromUserId); // You need to implement this method in the model
-
-        return $result;
-    }
     
        
     
@@ -126,5 +97,10 @@ class ProfileController extends Controller
 
     return response()->json($formattedUsers);
 }
+
+
+
+
+
 
 }

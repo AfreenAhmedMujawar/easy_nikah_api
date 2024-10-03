@@ -97,4 +97,11 @@ Route::get('/search-users', [UserController::class, 'searchUsers']);
 
 
 // routes/api.php
-$router->get('/users/new-registrations', 'UserController@getNewRegistrations');
+// $router->get('/users/new-registrations', 'UserController@getNewRegistrations');
+
+
+
+
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::get('/profiles', [ProfileController::class, 'getProfiles']);
+// });

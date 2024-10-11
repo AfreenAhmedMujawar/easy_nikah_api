@@ -20,7 +20,7 @@ Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'index']
 
 
 
-Route::get('/users', [UserController::class, 'index']);
+Route::get('/users', [UserController::class, 'getAllUsers']);
 Route::get('/user/{id}', [UserController::class, 'show']);
 // Route::post('/users', [UserController::class, 'store']);
 Route::put('/users/{id}', [UserController::class, 'update']);
@@ -47,6 +47,10 @@ Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
 
 
+
+
+Route::post('/request-otp', [ForgotPasswordController::class, 'requestOtp']);
+Route::post('/Active_verify-otp', [ForgotPasswordController::class, 'verifyOtpActive']);
 
 
 Route::post('/register', [RegisterController::class, 'store']);
@@ -80,11 +84,19 @@ Route::get('/users/{id}/contact-persons', [UserController::class, 'getContactPer
 
 use App\Http\Controllers\ProfileController;
 
-Route::get('/new_profile/{id}', [ProfileController::class, 'getProfile']);
 
+
+Route::get('/new_profile', [ProfileController::class, 'getNewProfiles']);
+// Route::get('/popular_profiles', [ProfileController::class, 'getMostPopularProfiles']);
+// Route::get('/online_profiles', [ProfileController::class, 'getOnlineProfiles']);
+Route::get('/users/active_online_profiles', [ProfileController::class, 'getOnlineProfiles']);
+Route::get('/most_popular_profiles', [ProfileController::class, 'getRelatedUsers']);
 
 
 Route::get('/marital-status-list', [ProfileController::class, 'getUsersByMaritalStatus']);
+
+
+// Route::get('/marital-status-list', [ProfileController::class, 'getUsersByMaritalStatus']);
 
 
 Route::get('count_qualification', [UserController::class, 'getUserCount']);

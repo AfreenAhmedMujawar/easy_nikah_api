@@ -25,6 +25,31 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+
+
+//     public function getAllUsers(Request $request)
+// {
+//     // Retrieve all users from the 'users' table
+//     $users = User::all();
+
+//     // Return users as a JSON response
+//     return response()->json($users);
+// }
+
+
+
+public function getAllUsers(Request $request)
+{
+    // Define how many users you want to show per page
+    $perPage = 20; // Always return 20 users per page
+
+    // Retrieve users with pagination
+    $users = User::paginate($perPage);
+
+    // Return users with pagination metadata as a JSON response
+    return response()->json($users);
+}
+
     public function create()
     {
         
@@ -119,45 +144,6 @@ public function getProfessions()
         return response()->json($contactPersons);
     }
 
-
-
-
-    // public function getProfile($userId)
-    // {
-    //     // Fetch the user by ID with their contact persons (assumes the relationship is set up)
-    //     $user = User::with('contactPersons')->find($userId);
-
-    //     // Check if the user exists
-    //     if (!$user) {
-    //         return response()->json(['message' => 'User not found'], 404);
-    //     }
-
-    //     // Prepare contact person details
-    //     $contactPersons = $user->contactPersons->map(function($contact) {
-    //         return [
-    //             'Name' => $contact->contact_person_name,
-    //             'Relation' => $contact->contact_person_relation,
-    //             'Email' => $contact->contact_person_email,
-    //             'Email 1' => $contact->contact_person_email_second,
-    //             'Email 2' => $contact->contact_person_email_third,
-    //             'Phone 1' => $contact->contact_person_phone_no,
-    //             'Phone 2' => $contact->contact_person_mobile,
-    //             'WhatsApp' => $contact->contact_person_whatsapp,
-    //         ];
-    //     });
-
-    //     // Prepare the profile data (include other fields as necessary)
-    //     $profileData = [
-    //         'id' => $user->id,
-    //         'name' => $user->name,
-    //         'email' => $user->email,
-    //         // Other profile fields...
-    //         'contact_persons' => $contactPersons
-    //     ];
-
-    //     // Return the profile with contact person details
-    //     return response()->json($profileData);
-    // }
 
 
 
@@ -509,5 +495,18 @@ public function searchUsers(Request $request)
 
     return response()->json($users);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

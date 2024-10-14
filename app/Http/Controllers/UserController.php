@@ -27,28 +27,55 @@ class UserController extends Controller
 
 
 
-//     public function getAllUsers(Request $request)
-// {
-//     // Retrieve all users from the 'users' table
-//     $users = User::all();
-
-//     // Return users as a JSON response
-//     return response()->json($users);
-// }
-
-
-
-public function getAllUsers(Request $request)
+    public function getAllUsers(Request $request)
 {
-    // Define how many users you want to show per page
-    $perPage = 20; // Always return 20 users per page
+    // Retrieve all users from the 'users' table
+    $users = User::all();
 
-    // Retrieve users with pagination
-    $users = User::paginate($perPage);
-
-    // Return users with pagination metadata as a JSON response
+    // Return users as a JSON response
     return response()->json($users);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+    public function getAllUsersByLimit(Request $request)
+    {
+    // Ensure 'limit' is provided and is a positive integer
+    $limit = $request->query('limit');
+    
+    if (!is_numeric($limit) || (int)$limit <= 0) {
+        return response()->json([
+            'error' => 'The limit parameter is required and must be a positive integer.'
+        ], 400); // Return a 400 Bad Request if the parameter is invalid
+    }
+
+    // Limit the maximum number of items per page (e.g., max 100)
+    $limit = min((int)$limit, 100);
+
+    // Ensure 'page' is valid
+    $page = $request->query('page', 1);
+    if (!is_numeric($page) || (int)$page <= 0) {
+        return response()->json([
+            'error' => 'The page parameter must be a positive integer.'
+        ], 400); // Return a 400 Bad Request if the parameter is invalid
+    }
+
+    // Retrieve paginated users for the requested page
+    $users = User::paginate($limit, ['*'], 'page', (int)$page);
+
+    // Return paginated data with metadata as JSON response
+    return response()->json($users);
+    }
+
 
     public function create()
     {
@@ -100,7 +127,7 @@ public function getAllUsers(Request $request)
         }
     }
 
-public function getProfessions()
+    public function getProfessions()
     {
         $professions = Profession::all();
         return response()->json($professions, 200);
@@ -221,9 +248,11 @@ public function getProfessions()
         return response()->json($locationStatusCount);
     }
     
+
+
+
     public function getUserCountByAgeGroup(Request $request)
     {
-       
         $ageGroups = [
             '21 - 25' => [21, 25],
             '26 - 30' => [26, 30],
@@ -233,274 +262,123 @@ public function getProfessions()
             '61 - 75' => [61, 75],
         ];
     
-       
-        $statuses = ['Divorce', 'Unmarried', 'Widowed'];
+        $statuses = ['divorcee', 'unmarried', 'widow']; // Make sure these match your DB entries
     
-       
+        // Initialize counts
         $ageGroupStatusCount = [];
     
         foreach ($ageGroups as $group => $range) {
-        
-            if (!isset($ageGroupStatusCount[$group])) {
-                foreach ($statuses as $status) {
-                    $ageGroupStatusCount[$group][$status] = 0; 
-                }
-            }
+            $ageGroupStatusCount[$group] = array_fill_keys($statuses, 0); // Initialize all statuses to 0
     
-    
+            // Get count of users for this age group and each marital status
             $results = User::select(
-                    DB::raw("CASE WHEN users.age >= {$range[0]} AND users.age <= {$range[1]} THEN '{$group}' END AS age_group"),
-                    'users.user_marital_status',
-                    DB::raw('COUNT(*) as total_users')
-                )
-                ->whereBetween('users.age', $range)
-                ->groupBy('age_group', 'users.user_marital_status')
-                ->get();
+                'users.user_marital_status',
+                DB::raw('COUNT(*) as total_users')
+            )
+            ->whereBetween('users.age', $range)
+            ->groupBy('users.user_marital_status')
+            ->get();
     
-          
+            // Populate counts into the result array
             foreach ($results as $result) {
                 $status = $result->user_marital_status; 
                 $totalUsers = $result->total_users;    
     
-        
+                // Assign count to the corresponding status
                 $ageGroupStatusCount[$group][$status] = $totalUsers;
             }
         }
+    
         return response()->json($ageGroupStatusCount);
     }
     
 
-    
-    // public function getUserCountByAgeGroup(Request $request)
-    // {
-        
-    //     $ageGroups = [
-    //         '18 - 20' => [18, 20],
-    //         '21 - 25' => [21, 25],
-    //         '26 - 30' => [26, 30],
-    //         '31 - 35' => [31, 35],
-    //         '36 - 40' => [36, 40],
-    //         '41 - 60' => [41, 60],
-    //         '61 - 75' => [61, 75],
-    //     ];
-    
-      
-    //     $ageGroupStatusCount = [];
-    
-       
-    //     foreach ($ageGroups as $group => $range) {
-    //         $results = User::select(
-    //                 DB::raw("CASE WHEN users.age >= {$range[0]} AND users.age <= {$range[1]} THEN '{$group}' END AS age_group"),
-    //                 'users.user_marital_status',
-    //                 DB::raw('COUNT(*) as total_users')
-    //             )
-    //             ->whereBetween('users.age', $range)
-    //             ->groupBy('age_group', 'users.user_marital_status')
-    //             ->get();
-    
-    //         foreach ($results as $result) {
-    //             $status = $result->user_marital_status; 
-    //             $totalUsers = $result->total_users; 
-    
-    //             // // Initialize structure for each age group if not already set
-    //             // if (!isset($ageGroupStatusCount[$group])) {
-    //             //     $ageGroupStatusCount[$group] = [
-    //             //         'Divorce' => 0,
-    //             //         'Unmarried' => 0,
-    //             //         'Widowed' => 0
-    //             //     ];
-    //             // }
-    
-              
-    //             $ageGroupStatusCount[$group][$status] = $totalUsers;
-    //         }
-    //     }
-    
-        
-    //     return response()->json($ageGroupStatusCount);
-    // }
-    
 
+    public function searchUsers(Request $request)
+    {
+        // Initialize query
+        $query = User::query();
 
+        // If profile_id is provided, get the related users based on that profile's data
+        if ($request->has('profile_id') && $request->profile_id) {
+            // Fetch the user with the given profile_id
+            $profileUser = User::find($request->profile_id);
 
-// public function searchUsers(Request $request)
-// {
-//     // Initialize query
-//     $query = User::query();
-
-//     // Apply filters based on the request parameters
-//     if ($request->has('profile_id') && $request->profile_id) {
-//         $query->where('id', $request->profile_id); // Assuming the primary key is 'id'
-//     }
-
-//     if ($request->has('gender') && $request->gender) {
-//         $query->where('gender', $request->gender); // Replace 'gender' with your actual column name
-//     }
-
-//     if ($request->has('marital_status') && $request->marital_status) {
-//         $query->where('user_marital_status', $request->marital_status);
-//     }
-
-//     if ($request->has('education_qualification') && $request->education_qualification) {
-//         $query->where('user_qualification', $request->education_qualification);
-//     }
-
-//     if ($request->has('maslak') && $request->maslak) {
-//         $query->where('maslak', $request->maslak); // Replace 'maslak' with your actual column name
-//     }
-
-//     if ($request->has('height') && $request->height) {
-//         $query->where('height', $request->height); // Replace 'height' with your actual column name
-//     }
-
-//     if ($request->has('age') && $request->age) {
-//         // Assuming age is stored in a numeric format, adjust as needed
-//         $query->where('age', $request->age);
-//     }
-
-//     if ($request->has('country') && $request->country) {
-//         $query->where('country', $request->country); // Replace 'country' with your actual column name
-//     }
-
-//     if ($request->has('state') && $request->state) {
-//         $query->where('state', $request->state); // Replace 'state' with your actual column name
-//     }
-
-//     if ($request->has('city') && $request->city) {
-//         $query->where('city', $request->city); // Replace 'city' with your actual column name
-//     }
-
-//     $users = $query->get();
-
-    
-//     return response()->json($users);
-// }
-
-
-// public function getUserCountByAgeGroup(Request $request)
-// {
-//     // Define age groups
-//     $ageGroups = [
-//         '21 - 25' => [21, 25],
-//         '26 - 30' => [26, 30],
-//         '31 - 35' => [31, 35],
-//         '36 - 40' => [36, 40],
-//         '41 - 60' => [41, 60],
-//         '61 - 75' => [61, 75],
-//     ];
-
-//     // Define all possible marital statuses
-//     $statuses = ['Divorce', 'Unmarried', 'Widowed'];
-
-//     // Initialize the final array
-//     $ageGroupStatusCount = [];
-
-//     // Loop through each age group
-//     foreach ($ageGroups as $group => $range) {
-//         // Initialize the array for the age group with default counts for all statuses
-//         if (!isset($ageGroupStatusCount[$group])) {
-//             foreach ($statuses as $status) {
-//                 $ageGroupStatusCount[$group][$status] = 0;  // Default to 0 for all statuses
-//             }
-//         }
-
-//         // Query to get user count by age group and marital status
-//         $results = User::select(
-//                 DB::raw("CASE WHEN users.age >= {$range[0]} AND users.age <= {$range[1]} THEN '{$group}' END AS age_group"),
-//                 'users.user_marital_status',
-//                 DB::raw('COUNT(*) as total_users')
-//             )
-//             ->whereBetween('users.age', $range)
-//             ->groupBy('age_group', 'users.user_marital_status')
-//             ->get();
-
-//         // Update counts based on query results
-//         foreach ($results as $result) {
-//             $status = $result->user_marital_status; // Get marital status
-//             $totalUsers = $result->total_users;     // Get count of users
-
-//             // Update the count for the current status in the age group
-//             $ageGroupStatusCount[$group][$status] = $totalUsers;
-//         }
-//     }
-
-//     // Return the response as JSON
-//     return response()->json($ageGroupStatusCount);
-// }
-
-
-public function searchUsers(Request $request)
-{
-    // Initialize query
-    $query = User::query();
-
-    // If profile_id is provided, get the related users based on that profile's data
-    if ($request->has('profile_id') && $request->profile_id) {
-        // Fetch the user with the given profile_id
-        $profileUser = User::find($request->profile_id);
-
-        if ($profileUser) {
-            // Search for related users based on this profile's attributes
-            $query->where('gender', $profileUser->gender)
-                  ->where('user_marital_status', $profileUser->user_marital_status)
-                  ->where('user_qualification', $profileUser->user_qualification)
-                  ->where('maslak', $profileUser->maslak)
-                  ->where('country', $profileUser->country)
-                  ->where('state', $profileUser->state)
-                  ->where('city', $profileUser->city);
-        } else {
-            return response()->json(['message' => 'Profile not found'], 404);
+            if ($profileUser) {
+                // Search for related users based on this profile's attributes
+                $query->where('gender', $profileUser->gender)
+                    ->where('user_marital_status', $profileUser->user_marital_status)
+                    ->where('user_qualification', $profileUser->user_qualification)
+                    ->where('maslak', $profileUser->maslak)
+                    ->where('country', $profileUser->country)
+                    ->where('state', $profileUser->state)
+                    ->where('city', $profileUser->city);
+            } else {
+                return response()->json(['message' => 'Profile not found'], 404);
+            }
         }
+
+        // Apply filters based on the request parameters (if not searching by profile_id or additional filters provided)
+        if ($request->has('gender') && $request->gender) {
+            $query->where('gender', $request->gender);
+        }
+
+        if ($request->has('marital_status') && $request->marital_status) {
+            $query->where('user_marital_status', $request->marital_status);
+        }
+
+        if ($request->has('education_qualification') && $request->education_qualification) {
+            $query->where('user_qualification', $request->education_qualification);
+        }
+
+        if ($request->has('maslak') && $request->maslak) {
+            $query->where('maslak', $request->maslak);
+        }
+
+        if ($request->has('height') && $request->height) {
+            $query->where('height', $request->height);
+        }
+
+        if ($request->has('age') && $request->age) {
+            $query->where('age', $request->age);
+        }
+
+        if ($request->has('country') && $request->country) {
+            $query->where('country', $request->country);
+        }
+
+        if ($request->has('state') && $request->state) {
+            $query->where('state', $request->state);
+        }
+
+        if ($request->has('city') && $request->city) {
+            $query->where('city', $request->city);
+        }
+
+        // Get the result
+        $users = $query->get();
+
+        return response()->json($users);
     }
 
-    // Apply filters based on the request parameters (if not searching by profile_id or additional filters provided)
-    if ($request->has('gender') && $request->gender) {
-        $query->where('gender', $request->gender);
-    }
-
-    if ($request->has('marital_status') && $request->marital_status) {
-        $query->where('user_marital_status', $request->marital_status);
-    }
-
-    if ($request->has('education_qualification') && $request->education_qualification) {
-        $query->where('user_qualification', $request->education_qualification);
-    }
-
-    if ($request->has('maslak') && $request->maslak) {
-        $query->where('maslak', $request->maslak);
-    }
-
-    if ($request->has('height') && $request->height) {
-        $query->where('height', $request->height);
-    }
-
-    if ($request->has('age') && $request->age) {
-        $query->where('age', $request->age);
-    }
-
-    if ($request->has('country') && $request->country) {
-        $query->where('country', $request->country);
-    }
-
-    if ($request->has('state') && $request->state) {
-        $query->where('state', $request->state);
-    }
-
-    if ($request->has('city') && $request->city) {
-        $query->where('city', $request->city);
-    }
-
-    // Get the result
-    $users = $query->get();
-
-    return response()->json($users);
-}
 
 
 
 
 
 
+    public function logout(Request $request)
+        {
+            // Check if the user is authenticated
+            if (Auth::check()) {
+                // Log out the user (Invalidate the token)
+                Auth::logout();
+
+                return response()->json(['message' => 'Logged out successfully.']);
+            }
+
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
 
 
 

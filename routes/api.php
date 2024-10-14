@@ -10,21 +10,32 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\FamilyController;
 
+use App\Http\Controllers\ViewedController;
+
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+
+
+// Route::middleware('auth:sanctum')->get('/users', function () {
+//     return User::all();
+// });
+
+// use App\Http\Controllers\UserController;
+
+Route::middleware('auth:sanctum')->get('/users', [UserController::class, 'getAllUsers']);
 
 
 Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'index']);
 
 
 
-
+Route::get('/users_limit', [UserController::class, 'getAllUsersByLimit']);
 Route::get('/users', [UserController::class, 'getAllUsers']);
 Route::get('/user/{id}', [UserController::class, 'show']);
 // Route::post('/users', [UserController::class, 'store']);
 Route::put('/users/{id}', [UserController::class, 'update']);
-Route::delete('/users/{id}', [UserController::class, 'destroy']);
+Route::delete('/users/{id}', [UserController::class, 'user_delete']);
 
 
 Route::get('/professions', [UserController::class, 'getProfessions']);
@@ -53,6 +64,11 @@ Route::post('/request-otp', [ForgotPasswordController::class, 'requestOtp']);
 Route::post('/Active_verify-otp', [ForgotPasswordController::class, 'verifyOtpActive']);
 
 
+
+Route::post('/register2', [RegisterController::class, 'register2']);
+
+
+
 Route::post('/register', [RegisterController::class, 'store']);
 Route::post('/login', [LoginController::class, 'login']);
 
@@ -76,9 +92,6 @@ Route::post('/user/{userId}/locations', [LocationController::class, 'addUserLoca
 Route::get('/my-profile',[LocationController::class, 'index'])->name('my-profile');
 Route::get('/users/{id}/contact-persons', [UserController::class, 'getContactPersons']);
 
-// Route::get('/users/contact', [ContactPersonProfileController ::class, 'getContactPersons']);
-
-// Route::get('/customer/{id}', [ContactPersonProfileController ::class, 'getContactPersons']);
 
 
 
@@ -99,11 +112,19 @@ Route::get('/marital-status-list', [ProfileController::class, 'getUsersByMarital
 // Route::get('/marital-status-list', [ProfileController::class, 'getUsersByMaritalStatus']);
 
 
+
+
+
+
 Route::get('count_qualification', [UserController::class, 'getUserCount']);
 
 Route::get('/count_location', [UserController::class, 'getUserCountByLocation']);
 
 Route::get('/count_age_group', [UserController::class, 'getUserCountByAgeGroup']);
+
+
+Route::get('/user-counts/age-groups', [UserController::class, 'getUserCountByAgeGroup']);
+
 
 Route::get('/search-users', [UserController::class, 'searchUsers']);
 
@@ -117,3 +138,32 @@ Route::get('/search-users', [UserController::class, 'searchUsers']);
 // Route::middleware('auth:sanctum')->group(function () {
 //     Route::get('/profiles', [ProfileController::class, 'getProfiles']);
 // });
+
+
+
+
+
+
+
+
+Route::get('/viewed/user/{id}', [ViewedController::class, 'getUserViewed']);
+Route::get('/viewed/{from_id}/{to_id}', [ViewedController::class, 'getViewed']);
+Route::get('/viewed/count/{id}', [ViewedController::class, 'getViewedCount']);
+Route::post('/viewed/add', [ViewedController::class, 'addViewed']);
+Route::put('/viewed/edit', [ViewedController::class, 'editViewed']);
+
+
+
+
+Route::post('/user/{id}/view', [ViewedController::class, 'incrementView']);
+
+Route::get('/viewed', [ViewedController::class, 'index']); 
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/viewed', [ViewedController::class, 'index']); // List all posts
+    Route::post('/posts/{id}/view', [ViewedController::class, 'recordView']); // Record a view
+});
+
+
+
+Route::post('/logout', [UserController::class, 'logout'])->middleware('auth:sanctum');

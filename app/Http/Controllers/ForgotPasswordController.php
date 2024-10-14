@@ -94,55 +94,112 @@ public function verifyOtp(Request $request)
 
 
 
+// public function verifyOtpActive(Request $request)
+// {
+//     // Validate the OTP input
+//     $request->validate([
+//         'otp' => 'required|integer',
+//     ]);
+
+//     // Find the user by the OTP
+//     $user = User::where('otp', $request->otp)->first();
+
+//     // Check if a user with this OTP exists
+//     if ($user) {
+//         // Check if the OTP has expired
+//         if (Carbon::now()->greaterThan($user->otp_expires_at)) {
+//             // OTP has expired, resend a new OTP
+//             $this->resendOtp($user);
+
+//             return response()->json([
+//                 'message' => 'OTP expired. A new OTP has been sent to your email.',
+//                 'success' => false,
+//                 'otp_expires_at' => $user->otp_expires_at,  // Debug info
+//                 'current_time' => Carbon::now(),  // Debug info
+//             ], 200);
+//         }
+
+//         // If OTP is valid and not expired, activate the account
+//         $user->email_verification_status = 1; // Assuming 1 indicates verified
+//         $user->user_status = 'active'; // Update the user_status to 'active'
+//         $user->otp_expires_at = null; // Clear OTP expiration
+//         // $user->otp = null; // Optional: Clear OTP after successful verification
+//         $user->save();
+
+//         // Return success message with debug info
+//         return response()->json([
+//             'message' => 'OTP verified successfully. Your account is now active.',
+//             'success' => true,
+//             'user_status' => $user->user_status,  // Debug info
+//             'email_verification_status' => $user->email_verification_status,  // Debug info
+//         ], 200);
+//     } else {
+//         // If no user is found with the OTP, return an error with debug info
+//         return response()->json([
+//             'message' => 'Invalid OTP.',
+//             'success' => false,
+//             'input_otp' => $request->otp,  // Debug info
+//         ], 400);
+//     }
+// }
+
+
+
+
+
 public function verifyOtpActive(Request $request)
 {
-    // Validate the OTP input
-    $request->validate([
+    // Ensure request is JSON
+    if ($request->header('Content-Type') !== 'application/json') {
+        return response()->json([
+            'message' => 'Invalid content type. Use application/json.'
+        ], 415); // Unsupported Media Type
+    }
+
+    // Step 1: Validate OTP input
+    $validatedData = $request->validate([
         'otp' => 'required|integer',
     ]);
 
-    // Find the user by the OTP
-    $user = User::where('otp', $request->otp)->first();
+    // Step 2: Find user by OTP
+    $user = User::where('otp', $validatedData['otp'])->first();
 
-    // Check if a user with this OTP exists
+    // Step 3: Handle OTP validation scenarios
     if ($user) {
-        // Check if the OTP has expired
-        if (Carbon::now()->greaterThan($user->otp_expires_at)) {
-            // OTP has expired, resend a new OTP
-            $this->resendOtp($user);
+        // Check if OTP has expired
+        if (now()->greaterThan($user->otp_expires_at)) {
+            $this->resendOtp($user); // Resend OTP if expired
 
             return response()->json([
                 'message' => 'OTP expired. A new OTP has been sent to your email.',
                 'success' => false,
-                'otp_expires_at' => $user->otp_expires_at,  // Debug info
-                'current_time' => Carbon::now(),  // Debug info
+                'otp_expires_at' => $user->otp_expires_at, // Debug info
+                'current_time' => now(), // Debug info
             ], 200);
         }
 
-        // If OTP is valid and not expired, activate the account
-        $user->email_verification_status = 1; // Assuming 1 indicates verified
-        $user->user_status = 'active'; // Update the user_status to 'active'
+        // OTP is valid, activate user
+        $user->email_verification_status = 1; // Set verified
+        $user->user_status = 'active'; // Activate user
         $user->otp_expires_at = null; // Clear OTP expiration
-        // $user->otp = null; // Optional: Clear OTP after successful verification
+        // $user->otp = null; // Optional: Clear OTP
         $user->save();
 
-        // Return success message with debug info
         return response()->json([
             'message' => 'OTP verified successfully. Your account is now active.',
             'success' => true,
-            'user_status' => $user->user_status,  // Debug info
-            'email_verification_status' => $user->email_verification_status,  // Debug info
+            'user_status' => $user->user_status, // Debug info
+            'email_verification_status' => $user->email_verification_status, // Debug info
         ], 200);
-    } else {
-        // If no user is found with the OTP, return an error with debug info
-        return response()->json([
-            'message' => 'Invalid OTP.',
-            'success' => false,
-            'input_otp' => $request->otp,  // Debug info
-        ], 400);
     }
-}
 
+    // Invalid OTP case
+    return response()->json([
+        'message' => 'Invalid OTP.',
+        'success' => false,
+        'input_otp' => $validatedData['otp'], // Debug info
+    ], 400);
+}
 
 
 public function resendOtp($user)

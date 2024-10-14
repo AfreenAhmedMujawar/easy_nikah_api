@@ -15,6 +15,21 @@ class User extends Authenticatable
     public $timestamps = false;
     protected $guarded= false;
     
+    // protected $fillable = ['user_status'];
+    protected $fillable = [
+        'full_name', 'email', 'password', 'profile_id', 'user_height', 'user_namaz_type', 
+        'age', 'user_fasting_type', 'user_hijab', 'user_marital_status', 'user_children', 
+        'user_qualification', 'user_profession', 'user_father_name', 'user_mother_name', 
+        'user_father_profession', 'user_mother_profession', 'user_brothers', 
+        'user_married_brothers', 'user_sisters', 'user_married_sisters', 
+        'user_location_country', 'user_location_state', 'user_location_city', 'pan_card', 
+        'aadhar_card', 'driving_license', 'maslak', 'facebook_profile_link', 
+        'linkedin_profile_link', 'twitter_profile_link', 'instagram_profile_link', 
+        'user_native_location', 'user_work_location', 'user_partner_age_group', 
+        'user_partner_current_location', 'user_partner_native_location', 
+        'part_pref_maritial_status', 'part_pref_edu_quali', 'part_pref_height', 
+        'part_pref_maslak', 'verification_id', 'email_verification_status'
+    ];
     
     // protected $fillable = [
     //     'name',
@@ -25,6 +40,7 @@ class User extends Authenticatable
     //     'email', 'full_name', 'password', 'email_verified', 'password_reset_token'
     // ];
 
+    
     
     protected $hidden = [
         'password',

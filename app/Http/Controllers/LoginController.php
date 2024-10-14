@@ -80,6 +80,7 @@ public function login(Request $request)
             return response()->json([
                 'message' => 'Please activate your account. An OTP has been sent to your email.',
                 'success' => false,
+                'isInActiveUser' => true,
             ], 403);
         }
 

@@ -50,7 +50,49 @@ class ProfileController extends Controller
 
 
 
-    public function getMostPopularProfiles(Request $request)
+//     public function getMostPopularProfiles(Request $request)
+// {
+//     // Sorting direction (default: ascending)
+//     $sortDirection = $request->query('sort', 'asc');
+    
+//     // Fetch most popular profiles ordered by last login or other criteria
+//     $popularProfiles = User::where('user_status', 1)
+//         ->join('user_login', 'users.id', '=', 'user_login.user_id')  // Join with the login table
+//         ->leftJoin('qualifications', 'users.user_qualification', '=', 'qualifications.qualification_id')  // Join with qualifications table
+//         ->leftJoin('cities', 'users.user_location_city', '=', 'cities.city_id')  // Join with cities table
+//         ->leftJoin('states', 'users.user_location_state', '=', 'states.state_id')  // Join with states table
+//         ->leftJoin('countries', 'users.user_location_country', '=', 'countries.country_id')  // Join with countries table
+//         ->orderBy('user_login.last_login', $sortDirection)  // Order by last login
+//         ->select('users.id', 'users.profile_id', 'users.full_name', 'users.user_marital_status', 
+//                  'users.age', 'users.user_height', 'qualifications.qualification_name as user_qualification',  // Fetch qualification name
+//                  'cities.city_name', 'states.state_name', 'countries.country_name',  // Fetch location names
+//                  'user_login.last_login')  // Specify fields explicitly
+//         ->get();
+
+//     // Format the popular profiles data
+//     $formattedProfiles = $popularProfiles->map(function($user) {
+//         return [
+//             'profile_id' => $user->profile_id,
+//             'full_name' => $user->full_name,
+//             'marital_status' => ucfirst($user->user_marital_status),
+//             'age' => $user->age,
+//             'height' => $user->user_height,
+//             'qualification' => $user->user_qualification ?? '-',  // Now returns qualification name instead of ID
+//             'location' => ($user->city_name ?? '-') . ', ' . ($user->state_name ?? '-') . ', ' . ($user->country_name ?? '-'),  // Return city, state, and country names
+//             'last_login' => $user->last_login,  // Include last login date
+//         ];
+//     });
+
+//     // Return the profile details along with related users
+//     return response()->json([
+//         'success' => true,
+//         'most_popular_profiles' => $formattedProfiles,  // Related popular profiles ordered by latest date and time with selected columns
+//     ]);
+// }
+
+
+
+public function getMostPopularProfiles(Request $request)
 {
     // Sorting direction (default: ascending)
     $sortDirection = $request->query('sort', 'asc');
@@ -75,7 +117,7 @@ class ProfileController extends Controller
             'profile_id' => $user->profile_id,
             'full_name' => $user->full_name,
             'marital_status' => ucfirst($user->user_marital_status),
-            'age' => $user->age,
+            'age'=> $user->age,
             'height' => $user->user_height,
             'qualification' => $user->user_qualification ?? '-',  // Now returns qualification name instead of ID
             'location' => ($user->city_name ?? '-') . ', ' . ($user->state_name ?? '-') . ', ' . ($user->country_name ?? '-'),  // Return city, state, and country names
@@ -89,8 +131,6 @@ class ProfileController extends Controller
         'most_popular_profiles' => $formattedProfiles,  // Related popular profiles ordered by latest date and time with selected columns
     ]);
 }
-
-
 
 
 

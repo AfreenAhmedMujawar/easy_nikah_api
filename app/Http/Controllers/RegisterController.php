@@ -138,8 +138,13 @@ class RegisterController extends Controller
         'user_hijab' => 'nullable|string|max:50',
         'user_marital_status' => 'nullable|string|max:50',
         'user_children' => 'nullable|integer|min:0',
-        'user_qualification' => 'nullable|string|max:100',
-        'user_profession' => 'nullable|string|max:100',
+        // 'user_qualification' => 'nullable|string|max:100',
+        // 'user_profession' => 'nullable|string|max:100',
+
+        'user_qualification' => 'nullable|integer|exists:qualifications,qualification_id', // ID validation
+        // 'user_profession' => 'nullable|integer|exists:professions,id', // ID validation
+        'user_profession' => 'nullable|integer|exists:professions,id', // Validates if the profession ID exists
+   
         'user_father_name' => 'nullable|string|max:255',
         'user_mother_name' => 'nullable|string|max:255',
         'user_father_profession' => 'nullable|string|max:255',
@@ -189,8 +194,12 @@ class RegisterController extends Controller
         'user_hijab' => $request->input('user_hijab'),
         'user_marital_status' => $request->input('user_marital_status'),
         'user_children' => $request->input('user_children'),
-        'user_qualification' => $request->input('user_qualification'),
-        'user_profession' => $request->input('user_profession'),
+        // 'user_qualification' => $request->input('user_qualification'),
+        // 'user_profession' => $request->input('user_profession'),
+
+        'user_qualification' => $request->input('user_qualification'), // Store qualification ID
+        'user_profession' => $request->input('user_profession'), // Store profession ID
+      
         'user_father_name' => $request->input('user_father_name'),
         'user_mother_name' => $request->input('user_mother_name'),
         'user_father_profession' => $request->input('user_father_profession'),

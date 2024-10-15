@@ -294,16 +294,99 @@ class UserController extends Controller
     
 
 
+    // public function searchUsers(Request $request)
+    // {
+    //     // Initialize query
+    //     $query = User::query();
+
+    //     // If profile_id is provided, get the related users based on that profile's data
+    //     if ($request->has('profile_id') && $request->profile_id) {
+    //         // Fetch the user with the given profile_id
+    //         $profileUser = User::find($request->profile_id);
+
+    //         if ($profileUser) {
+    //             // Search for related users based on this profile's attributes
+    //             $query->where('gender', $profileUser->gender)
+    //                 ->where('user_marital_status', $profileUser->user_marital_status)
+    //                 ->where('user_qualification', $profileUser->user_qualification)
+    //                 ->where('maslak', $profileUser->maslak)
+    //                 ->where('country', $profileUser->country)
+    //                 ->where('state', $profileUser->state)
+    //                 ->where('city', $profileUser->city);
+    //         } else {
+    //             return response()->json(['message' => 'Profile not found'], 404);
+    //         }
+    //     }
+
+    //     // Apply filters based on the request parameters (if not searching by profile_id or additional filters provided)
+    //     if ($request->has('gender') && $request->gender) {
+    //         $query->where('gender', $request->gender);
+    //     }
+
+    //     if ($request->has('marital_status') && $request->marital_status) {
+    //         $query->where('user_marital_status', $request->marital_status);
+    //     }
+
+    //     if ($request->has('education_qualification') && $request->education_qualification) {
+    //         $query->where('user_qualification', $request->education_qualification);
+    //     }
+
+    //     if ($request->has('maslak') && $request->maslak) {
+    //         $query->where('maslak', $request->maslak);
+    //     }
+
+    //     if ($request->has('height') && $request->height) {
+    //         $query->where('height', $request->height);
+    //     }
+
+    //     if ($request->has('age') && $request->age) {
+    //         $query->where('age', $request->age);
+    //     }
+
+    //     if ($request->has('country') && $request->country) {
+    //         $query->where('country', $request->country);
+    //     }
+
+    //     if ($request->has('state') && $request->state) {
+    //         $query->where('state', $request->state);
+    //     }
+
+    //     if ($request->has('city') && $request->city) {
+    //         $query->where('city', $request->city);
+    //     }
+
+    //     // Get the result
+    //     $users = $query->get();
+
+    //     return response()->json($users);
+    // }
+
+
+
     public function searchUsers(Request $request)
     {
+        // Validate the request
+        $request->validate([
+            'profile_id' => 'nullable|integer|exists:users,id',
+            'gender' => 'nullable|string',
+            'marital_status' => 'nullable|string',
+            'education_qualification' => 'nullable|integer', // Assuming qualification is stored as ID
+            'maslak' => 'nullable|string',
+            'height' => 'nullable|numeric',
+            'age' => 'nullable|integer',
+            'country' => 'nullable|string',
+            'state' => 'nullable|string',
+            'city' => 'nullable|string',
+        ]);
+    
         // Initialize query
         $query = User::query();
-
+    
         // If profile_id is provided, get the related users based on that profile's data
         if ($request->has('profile_id') && $request->profile_id) {
             // Fetch the user with the given profile_id
             $profileUser = User::find($request->profile_id);
-
+    
             if ($profileUser) {
                 // Search for related users based on this profile's attributes
                 $query->where('gender', $profileUser->gender)
@@ -317,53 +400,54 @@ class UserController extends Controller
                 return response()->json(['message' => 'Profile not found'], 404);
             }
         }
-
-        // Apply filters based on the request parameters (if not searching by profile_id or additional filters provided)
+    
+        // Apply additional filters based on the request parameters
         if ($request->has('gender') && $request->gender) {
             $query->where('gender', $request->gender);
         }
-
+    
         if ($request->has('marital_status') && $request->marital_status) {
             $query->where('user_marital_status', $request->marital_status);
         }
-
+    
         if ($request->has('education_qualification') && $request->education_qualification) {
             $query->where('user_qualification', $request->education_qualification);
         }
-
+    
         if ($request->has('maslak') && $request->maslak) {
             $query->where('maslak', $request->maslak);
         }
-
+    
         if ($request->has('height') && $request->height) {
             $query->where('height', $request->height);
         }
-
+    
         if ($request->has('age') && $request->age) {
             $query->where('age', $request->age);
         }
-
+    
         if ($request->has('country') && $request->country) {
             $query->where('country', $request->country);
         }
-
+    
         if ($request->has('state') && $request->state) {
             $query->where('state', $request->state);
         }
-
+    
         if ($request->has('city') && $request->city) {
             $query->where('city', $request->city);
         }
-
+    
         // Get the result
         $users = $query->get();
-
+    
+        if ($users->isEmpty()) {
+            return response()->json(['message' => 'No users found matching the criteria'], 404);
+        }
+    
         return response()->json($users);
     }
-
-
-
-
+    
 
 
 

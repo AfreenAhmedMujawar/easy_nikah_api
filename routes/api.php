@@ -52,10 +52,10 @@ Route::get('/test', function () {
 });
 
 
-Route::post('/forgot-password', [ForgotPasswordController::class, 'generateOtp']);
+Route::post('/email_verify_otp', [ForgotPasswordController::class, 'generateOtp']);
 Route::post('/forgot-password', [ForgotPasswordController::class, 'generateOtp']);
 Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
-Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
+Route::post('/forgot-password', [ForgotPasswordController::class, 'resetPassword']);
 
 
 
@@ -103,7 +103,7 @@ Route::get('/new_profile', [ProfileController::class, 'getNewProfiles']);
 // Route::get('/popular_profiles', [ProfileController::class, 'getMostPopularProfiles']);
 // Route::get('/online_profiles', [ProfileController::class, 'getOnlineProfiles']);
 Route::get('/users/active_online_profiles', [ProfileController::class, 'getOnlineProfiles']);
-Route::get('/most_popular_profiles', [ProfileController::class, 'getRelatedUsers']);
+Route::get('/most_popular_profiles', [ProfileController::class, 'getMostPopularProfiles']);
 
 
 Route::get('/marital-status-list', [ProfileController::class, 'getUsersByMaritalStatus']);
@@ -129,15 +129,6 @@ Route::get('/user-counts/age-groups', [UserController::class, 'getUserCountByAge
 Route::get('/search-users', [UserController::class, 'searchUsers']);
 
 
-// routes/api.php
-// $router->get('/users/new-registrations', 'UserController@getNewRegistrations');
-
-
-
-
-// Route::middleware('auth:sanctum')->group(function () {
-//     Route::get('/profiles', [ProfileController::class, 'getProfiles']);
-// });
 
 
 
@@ -145,25 +136,8 @@ Route::get('/search-users', [UserController::class, 'searchUsers']);
 
 
 
-
-Route::get('/viewed/user/{id}', [ViewedController::class, 'getUserViewed']);
-Route::get('/viewed/{from_id}/{to_id}', [ViewedController::class, 'getViewed']);
-Route::get('/viewed/count/{id}', [ViewedController::class, 'getViewedCount']);
-Route::post('/viewed/add', [ViewedController::class, 'addViewed']);
-Route::put('/viewed/edit', [ViewedController::class, 'editViewed']);
-
-
-
-
-Route::post('/user/{id}/view', [ViewedController::class, 'incrementView']);
-
-Route::get('/viewed', [ViewedController::class, 'index']); 
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/viewed', [ViewedController::class, 'index']); // List all posts
-    Route::post('/posts/{id}/view', [ViewedController::class, 'recordView']); // Record a view
-});
-
+Route::post('/profile/{to_id}/view', [ViewedController::class, 'incrementView']);
+Route::get('/profile/{userId}/views', [ViewedController::class, 'getTotalViews']);
 
 
 Route::post('/logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
